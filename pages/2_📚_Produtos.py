@@ -88,7 +88,6 @@ def plot_skewt(date, station):
     plt.figtext( 0.8, 0.54, '{:~P}'.format(k_index))
     plt.figtext( 0.65, 0.52, 'TT:')
     plt.figtext( 0.8, 0.52, '{:~P}'.format(tt_index))
-
     plt.figtext( 0.65, 0.50, 'MLCAPE:')
     plt.figtext( 0.8, 0.50, '{:~P}'.format(mlcape))
     plt.figtext( 0.65, 0.48, 'MLCIN:')
@@ -124,7 +123,7 @@ def plot_skewt(date, station):
     h.plot_colormapped(u1[mask], v1[mask], z[mask], intervals=intervals, colors=colors)
 
     #plt.title('SMBT', loc='right', x=1.3, y=1)
-    plt.title(station+'\nSondagem '+str(date), fontsize=20, fontweight='bold', loc='left', x=-2.7, y=1)
+    plt.title(station+'\nSondagem '+str(date), fontsize=20, fontweight='bold', loc='left', x=-2.7, y=0.5)
 
     return ax
 
@@ -139,16 +138,14 @@ station = st.text_input("Digite o código da estação (por exemplo, 'SBMT'):")
 # Botão para gerar o gráfico
 if st.button("Gerar Gráfico"):
     if date_input and station:
-        date = datetime(date_input.year, date_input.month, date_input.day, 12)  # Hora fixa em 12
+        date = datetime(date_input.year, date_input.month, date_input.day, int(hour))  # Hora fixa em 12
         #date = datetime(2019, 12, 23, 12)
         #station = 'SBMT'
         skew = plot_skewt(date, station)
         st.pyplot(skew)
+        df = WyomingUpperAir.request_data(date, station)
+        st.dataframe(df)
     else:
         st.warning("Por favor, preencha ambos os campos.")
-
-# Informações adicionais ou instruções
-st.write("Este aplicativo permite que você gere um gráfico Skew-T para uma estação meteorológica e data específica.")
-st.write("Certifique-se de fornecer uma data válida no formato apropriado (ano, mês, dia) e um código de estação válido.")
 
 # Nota: Certifique-se de que você tem todas as bibliotecas necessárias instaladas para que o código funcione corretamente.
