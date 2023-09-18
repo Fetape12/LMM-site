@@ -8,6 +8,8 @@ from datetime import datetime
 from siphon.simplewebservice.wyoming import WyomingUpperAir
 from metpy.plots import SkewT,Hodograph
 
+
+
 # Função para plotar o Skew-T
 def plot_skewt(date, station):
     df = WyomingUpperAir.request_data(date, station)
