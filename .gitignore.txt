@@ -1,2 +1,5 @@
 # Ignorar ambiente virtual Python
 env_LMM/
+
+# Outros padrões
+# ...
