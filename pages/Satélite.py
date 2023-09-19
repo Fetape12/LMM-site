@@ -19,9 +19,11 @@ from get_satelite import download_CMI                  # Our function for downlo
 from get_satelite import reproject                     # Our function for reproject
 from get_satelite import loadCPT                       # Import the CPT convert function
 import tempfile
+from log_time import log_execution_time
+
 #-----------------------------------------------------------------------------------------------------------
 st.title("Imagem de Satélite - GOES 16")
-
+temp_dir = None
 # Função para validar a data e hora inseridas pelo usuário
 def validate_datetime(date, time):
     try:
@@ -44,6 +46,7 @@ selected_datetime = validate_datetime(selected_date, selected_time) # Combine a 
 
 if selected_datetime and st.button("Gerar Mapa"):
   try:
+    log_execution_time.last_time = t.time()
     dt = datetime(selected_date.year, selected_date.month, selected_date.day, selected_time.hour, selected_time.minute)
     # Transforme a data dt em um formato yyyymmddhh
   # Start the time counter
@@ -61,7 +64,7 @@ if selected_datetime and st.button("Gerar Mapa"):
 
     # Download directory temp
     temp_dir = tempfile.mkdtemp()
-
+    log_execution_time(f"Criou diretório temp_dir")
     # Desired date (last 10 days only!): Format - 'YYYYMMDD'
     #date = datetime.today().strftime('%Y%m%d')
     date = (f'{dt:%Y%m%d}')
@@ -102,7 +105,7 @@ if selected_datetime and st.button("Gerar Mapa"):
     # Input and output directories
     input = temp_dir
     output = temp_dir
-
+    log_execution_time(f"def input output")
     #-----------------------------------------------------------------------------------------------------------
     date = (f'{dt:%Y%m%d}')
     yyyymmddhhmn = (f'{dt:%Y%m%d%H}00') # Data e hora da imagem de satélite
@@ -110,36 +113,37 @@ if selected_datetime and st.button("Gerar Mapa"):
 
     # Download the ABI file channel 13 - Clean IR
     file_ir = download_CMI(yyyymmddhhmn, 13, input)
-
+    log_execution_time(f"dowload CMI")
     #-----------------------------------------------------------------------------------------------------------
     # Variable
     var = 'CMI'
 
     # Open the file
     img = gdal.Open(f'NETCDF:{input}/{file_ir}.nc:' + var)
-
+    log_execution_time(f"criou img")
     # Read the header metadata
     metadata = img.GetMetadata()
     scale = float(metadata.get(var + '#scale_factor'))
     offset = float(metadata.get(var + '#add_offset'))
     undef = float(metadata.get(var + '#_FillValue'))
     dtime = metadata.get('NC_GLOBAL#time_coverage_start')
-
+    log_execution_time(f"ler img")
     # Load the data
     ds_cmi = img.ReadAsArray(0, 0, img.RasterXSize, img.RasterYSize).astype(float)
-
+    log_execution_time(f"load img")
     # Apply the scale, offset and convert to celsius
     ds_cmi = (ds_cmi * scale + offset) - 273.15
 
     # Reproject the file
     filename_ret = f'{output}/IR_{yyyymmddhhmn}.nc'
     reproject(filename_ret, img, ds_cmi, extent, undef)
-
+    log_execution_time(f"reprojeta")
     # Open the reprojected GOES-R image
     file = gdal.Open(filename_ret)
 
     # Get the pixel values
     data = file.GetRasterBand(1).ReadAsArray()
+    log_execution_time(f"abrir e obter os pixels do IR")
     #-----------------------------------------------------------------------------------------------------------
 
     # plotando sat + mslp + esp + vbarbs
@@ -157,9 +161,10 @@ if selected_datetime and st.button("Gerar Mapa"):
     # Converts a CPT file to be used in Python
     cpt = loadCPT(r'sat_shp/IR4AVHRR6.cpt')
     colormap = cm.colors.LinearSegmentedColormap('cpt', cpt)
-
+    log_execution_time(f"loadCPT")
     # Plot the image
     img1 = ax.imshow(data, origin='upper', vmin=-80, vmax=60, extent=img_extent, cmap=colormap, alpha=0.7)
+    log_execution_time(f"criou img1")
     # Add a colorbar
     #plt.colorbar(img1, label='Brightness Temperatures (°C)', extend='both', orientation='horizontal', pad=0.03, aspect = 50)
 
@@ -180,7 +185,7 @@ if selected_datetime and st.button("Gerar Mapa"):
     # https://geoftp.ibge.gov.br/organizacao_do_territorio/malhas_territoriais/malhas_municipais/municipio_2019/Brasil/BR/br_unidades_da_federacao.zip
     shapefile = list(shpreader.Reader(r'sat_shp/BR_UF_2019.shp').geometries())
     ax.add_geometries(shapefile, ccrs.PlateCarree(), edgecolor='white',facecolor='none', linewidth=0.3)
-
+    log_execution_time(f"ler shapefile")
     # Add coastlines, borders and gridlines
     ax.coastlines(resolution='10m', color='white', linewidth=0.8)
     ax.add_feature(cartopy.feature.BORDERS, edgecolor='white', linewidth=0.5)
@@ -204,10 +209,10 @@ if selected_datetime and st.button("Gerar Mapa"):
 
     # Show the image
     st.pyplot(plt)
-    
+    log_execution_time(f"plotou")
   finally:
-    t.sleep(5)
-    shutil.rmtree(temp_dir)
+    st.stop()
+    #shutil.rmtree(temp_dir)
   
   
   
