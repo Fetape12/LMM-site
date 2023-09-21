@@ -1,9 +1,12 @@
 import streamlit as st
+from backend.background import set_background
 
 st.set_page_config(
     page_title="Multipage App",
     page_icon="👋",
 )
+
+set_background(r'C:\Users\LUCAS\Documents\GitHub\LMM-site\fig\clounds.png')
 
 st.title("Laboratório de Meteorologia de Mesoescala - LMM")
 st.sidebar.success("Select a page above.")

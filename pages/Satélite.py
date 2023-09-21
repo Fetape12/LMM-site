@@ -15,9 +15,9 @@ from datetime import timedelta, date, datetime  # Basic Dates and time types
 import sys
 sys.path.append(r'C:\Users\LUCAS\Documents\GitHub\LMM-site\backend')
 
-from get_satelite import download_CMI                  # Our function for download
-from get_satelite import reproject                     # Our function for reproject
-from get_satelite import loadCPT                       # Import the CPT convert function
+from backend.get_satelite import download_CMI                  # Our function for download
+from backend.get_satelite import reproject                     # Our function for reproject
+from backend.get_satelite import loadCPT                       # Import the CPT convert function
 import tempfile
 from log_time import log_execution_time
 
