@@ -2,26 +2,9 @@ import streamlit as st
 import pandas as pd
 from PIL import Image, ImageDraw, ImageOps
 import os
+from backend.background import set_background
 
-# Criar um DataFrame de exemplo com os dados dos membros da equipe
-data = {
-    'Nome': ['Felipe Tartaro Pereira', 'Membro 2', 'Membro 3'],
-    'Cargo': ['CEO', 'Designer', 'Engenheiro'],
-    'Descrição': ['Elon Reeve Musk FRS (Pretória, 28 de junho de 1971) é um empreendedor,[3] empresário e filantropo sul-africano-canadense, naturalizado estadunidense. Ele é o fundador, diretor executivo e diretor técnico da SpaceX; CEO da Tesla, Inc.; vice-presidente da OpenAI, fundador e CEO da Neuralink; cofundador, presidente da SolarCity e proprietário do Twitter. Em dezembro de 2022, tinha uma fortuna avaliada em US$ 139 bilhões de dólares, tornou-se a segunda pessoa mais rica do mundo, de acordo com a Bloomberg, atrás apenas do empresário Jeff Bezos.', 'Descrição do Membro 2', 'Descrição do Membro 3'],
-    'Foto': ['fotominha.jpg', 'fotominha.jpg', 'fotominha.jpg']
-}
-# Largura e altura desejadas para as imagens
-largura_desejada = 200  # Ajuste conforme necessário
-altura_desejada = 267   # Proporção 3:4
-
-df = pd.DataFrame(data)
-
-# Pasta onde as imagens dos membros da equipe estão localizadas
-pasta_imagens = r"C:\Users\LUCAS\Documents\GitHub\LMM-site\fig"
-
-# Configurar o título do aplicativo
-st.title('Membros da Empresa')
-
+set_background(r'.\fig\fundos\planeta.jpg')
 # Função para aplicar um recorte arredondado a uma imagem
 def aplicar_recorte_arredondado(imagem):
     largura, altura = imagem.size
@@ -33,6 +16,47 @@ def aplicar_recorte_arredondado(imagem):
     imagem.putalpha(mascara)
     return imagem
 
+
+
+# Ler os dados do arquivo TXT com delimitador '|' e especificar a codificação
+def ler_dados_de_arquivo(nome_arquivo):
+    with open(nome_arquivo, 'r', encoding='utf-8') as file:
+        lines = file.readlines()
+    
+    header = lines[0].strip().split('|')  # Usar '|' como delimitador
+    data = [line.strip().split('|') for line in lines[1:]]
+    return header, data
+
+
+
+# Pasta onde as imagens dos membros da equipe estão localizadas
+pasta_imagens = r".\fig\membros"
+
+# Defina um estilo CSS personalizado para o título com a fonte "Helvetica"
+titulo_style = """
+    font-size: 36px;
+    font-weight: bold;
+    font-family: "Helvetica", sans-serif;
+    border: 2px solid #333;
+    padding: 10px 20px;
+    text-align: center;
+    background-color: #f0f0f0;
+    color: #333;
+"""
+
+# Use o título personalizado
+st.markdown(f'<p style="{titulo_style}">Membros da Empresa</p>', unsafe_allow_html=True)
+# Ler os dados do arquivo
+header, data = ler_dados_de_arquivo(r".\backend\membros_desc.txt")
+
+# Criar o DataFrame
+df = pd.DataFrame(data, columns=header)
+
+# Largura e altura desejadas para as imagens
+largura_desejada = 240  # Ajuste conforme necessário
+altura_desejada = 267   # Proporção 3:4
+
+# Loop pelos membros da equipe e exibir suas informações
 # Loop pelos membros da equipe e exibir suas informações
 for index, row in df.iterrows():
     imagem_path = os.path.join(pasta_imagens, row['Foto'])
@@ -47,7 +71,7 @@ for index, row in df.iterrows():
     imagem_recortada = aplicar_recorte_arredondado(imagem_redimensionada)
     
     # Exibir a imagem recortada no Streamlit sem legenda
-    st.image(imagem_recortada, use_column_width=False, output_format='PNG')
+    st.image(imagem_recortada, use_column_width=False, output_format='JPG')
     
     # Aplicar estilo CSS para alinhar as imagens à esquerda
     st.markdown(
@@ -67,8 +91,13 @@ for index, row in df.iterrows():
     st.markdown(
         f'<div style="float: left; padding-left: 20px;">'
         f'<h3>{row["Nome"]}</h3>'
-        f'<p><strong>Cargo:</strong> {row["Cargo"]}</p>'
+        f'<p><strong>Cargo:</strong> <em><b>{row["Cargo"]}</b></em></p>'
         f'<p><strong>Descrição:</strong> {row["Descrição"]}</p>'
+        f'<p><strong>Formação:</strong> {row["Formação"]}</p>'
+        f'<p><strong>Linha de Pesquisa:</strong> {row["Linha de Pesquisa"]}</p>'
+        f'<p><strong>Palavra chave:</strong> {row["Palavra chave"]}</p>'
+        f'<p><strong>CV:</strong> <a href="{row["CV"]}">{row["CV"]}</a></p>'
+        f'<p><strong>Contato:</strong> <a href="{row["Contato"]}">{row["Contato"]}</a></p>'
         f'</div>',
         unsafe_allow_html=True
     )

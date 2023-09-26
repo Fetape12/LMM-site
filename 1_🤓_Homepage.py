@@ -6,7 +6,7 @@ st.set_page_config(
     page_icon="👋",
 )
 
-set_background(r'C:\Users\LUCAS\Documents\GitHub\LMM-site\fig\clounds.png')
+set_background(r'.\fig\clounds.png')
 
 st.title("Laboratório de Meteorologia de Mesoescala - LMM")
 st.sidebar.success("Select a page above.")
